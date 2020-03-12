@@ -1,0 +1,3 @@
+Setting up MySQL DB on EC2
+==============================
+wget https://dev.mysql.com/downloads/file/?id=486026
