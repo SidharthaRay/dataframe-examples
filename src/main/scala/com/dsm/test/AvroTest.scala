@@ -1,17 +1,12 @@
-//import com.dsm.model.Person
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.Row
+package com.dsm.test
 
-import scala.collection.mutable
-import scala.util.parsing.json.JSON
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.explode
 
 object AvroTest {
   def main(args: Array[String]): Unit = {
     val sparkSession = SparkSession.builder().master("local[*]").appName("Avro Test").getOrCreate()
     sparkSession.sparkContext.setLogLevel("ERROR")
-    import sparkSession.implicits._
 
     sparkSession.sqlContext
       .sparkContext

@@ -23,6 +23,7 @@ object Test {
       .foreach(println)
 
 
+/*
     sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", "AKIA4TAG5FQOEYXMSJ73")
     sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", "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")
 
@@ -30,6 +31,7 @@ object Test {
     //    rdd.map(x => x.split(",")).map(r => (r(0),r(1))).reduceByKey((x,y) => (x+y)).take(3).foreach(println)
 
     rdd.take(3).foreach(println)
+*/
     sparkSession.close()
   }
 }
