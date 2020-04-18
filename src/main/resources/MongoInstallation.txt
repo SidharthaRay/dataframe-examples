@@ -9,6 +9,11 @@ sudo apt-get install -y mongodb-org
 
 sudo systemctl unmask mongodb
 
+cd ../..
+cd etc/
+sudo vi mongod.conf
+sudo service mongod restart
+
 Create a mongo doc
 ---------------------------------------
 sudo apt-cache policy mongodb
