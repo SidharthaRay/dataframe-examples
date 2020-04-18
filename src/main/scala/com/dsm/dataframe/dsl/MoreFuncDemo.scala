@@ -32,10 +32,10 @@ object MoreFuncDemo {
 
     peopleDf.show()
     peopleDf.groupBy($"firstName").agg(first($"weightInLbs")).show()
-//    peopleDf.groupBy(trim(lower($"firstName"))).agg(first($"weightInLbs")).show()
-//    peopleDf.groupBy(trim(lower($"firstName"))).agg(first($"weightInLbs", true)).show()
-//    peopleDf.sort($"weightInLbs".desc).groupBy(trim(lower($"firstName"))).agg(first($"weightInLbs", true)).show()
-//    peopleDf.sort($"weightInLbs".asc_nulls_last).groupBy(trim(lower($"firstName"))).agg(first($"weightInLbs", true)).show()
+    peopleDf.groupBy(trim(lower($"firstName"))).agg(first($"weightInLbs")).show()
+    peopleDf.groupBy(trim(lower($"firstName"))).agg(first($"weightInLbs", true)).show()
+    peopleDf.sort($"weightInLbs".desc).groupBy(trim(lower($"firstName"))).agg(first($"weightInLbs", true)).show()
+    peopleDf.sort($"weightInLbs".asc_nulls_last).groupBy(trim(lower($"firstName"))).agg(first($"weightInLbs", true)).show()
 
     var correctedPeopleDf = peopleDf
       .withColumn("firstName", initcap($"firstName"))
@@ -57,6 +57,7 @@ object MoreFuncDemo {
 
     correctedPeopleDf
       .filter(lower($"jobType").isin(List("chemical engineer", "teacher"):_*))
+//      .filter(lower($"jobType").isin("chemical engineer", "teacher"))
       .show()
 
     sparkSession.close()

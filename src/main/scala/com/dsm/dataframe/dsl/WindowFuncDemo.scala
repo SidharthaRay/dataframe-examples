@@ -23,8 +23,7 @@ object WindowFuncDemo {
     sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
     sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
 
-//    val finFilePath = s"s3n://${s3Config.getString("s3_bucket")}/finances-small"
-    val finFilePath = s"/Users/sidhartha.ray/Documents/workspace/dataframe-examples/src/main/resources/data/finances-small/"
+    val finFilePath = s"s3n://${s3Config.getString("s3_bucket")}/finances-small"
     val financeDf = sparkSession.read.parquet(finFilePath)
     financeDf.printSchema()
 
@@ -58,7 +57,7 @@ object WindowFuncDemo {
         $"category",
         $"revenue",
         lag($"revenue", 1).over(catRevenueWindowSpec).as("prevRevenue"),
-        lag($"revenue", 2, "N/A").over(catRevenueWindowSpec).as("prev2Revenue"),
+        lag($"revenue", 2, 0).over(catRevenueWindowSpec).as("prev2Revenue"),
         row_number().over(catRevenueWindowSpec).as("row_number"),
         rank().over(catRevenueWindowSpec).as("rev_rank"),
         dense_rank().over(catRevenueWindowSpec).as("rev_dense_rank")

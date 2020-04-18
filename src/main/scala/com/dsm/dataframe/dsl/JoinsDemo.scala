@@ -4,6 +4,7 @@ import com.dsm.model.{Employee, _}
 import com.dsm.utils.Constants
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 object JoinsDemo {
@@ -42,6 +43,7 @@ object JoinsDemo {
 
 //    employeeDf.join(empRoleDf, $"id" === $"id").show(false)   // Ambiguous column name "id"
     employeeDf.join(empRoleDf, employeeDf("id") === empRoleDf("id")).show(false)
+    employeeDf.join(broadcast(empRoleDf), employeeDf("id") === empRoleDf("id")).show(false)
 
     employeeDf.join(empRoleDf, Seq("id"), "inner").show(false)    //"left_outer"/"left", "full_outer"/"full"/"outer"
     employeeDf.join(empRoleDf, Seq("id"), "right_outer").show(false)    //"left"

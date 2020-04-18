@@ -2,8 +2,6 @@ package com.dsm.dataframe.from.other.systems
 
 import com.dsm.utils.Constants
 import org.apache.spark.sql.SparkSession
-import com.mongodb.spark._
-import com.mongodb.spark.config._
 import com.typesafe.config.ConfigFactory
 
 object MongoDocToDf {
