@@ -3,36 +3,35 @@ package com.dsm.dataframe.sql
 import com.dsm.utils.Constants
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
 
 object FinanceDataAnalysis {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession
+    val spark = SparkSession
       .builder
       .master("local[*]")
-      .appName("Dataframe Example")
+      .appName("Finance Data Analysis")
       .getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
-    import sparkSession.implicits._
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
     val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
     val s3Config = rootConfig.getConfig("s3_conf")
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
 
     val finFilePath = s"s3n://${s3Config.getString("s3_bucket")}/finances-small"
-    val financeDf = sparkSession.sql(s"select * from parquet.`$finFilePath`")
+    val financeDf = spark.sql(s"select * from parquet.`$finFilePath`")
 
     financeDf.printSchema()
     financeDf.show()
     financeDf.createOrReplaceTempView("finances")
 
-    sparkSession.sql("select * from finances order by amount").show(5)
+    spark.sql("select * from finances order by amount").show(5)
 
-    sparkSession.sql("select concat_ws(' - ', AccountNumber, Description) as AccountDetails from finances").show(5, false)
+    spark.sql("select concat_ws(' - ', AccountNumber, Description) as AccountDetails from finances")
+      .show(5, false)
 
-    val aggFinanceDf = sparkSession.sql("""
+    val aggFinanceDf = spark.sql("""
       select
         AccountNumber,
         sum(Amount) as TotalTransaction,
@@ -48,19 +47,9 @@ object FinanceDataAnalysis {
     aggFinanceDf.show(false)
     aggFinanceDf.createOrReplaceTempView("agg_finances")
 
-    sparkSession.sql(
-      """
-        select
-          AccountNumber,
-          UniqueTransactionDescriptions,
-          sort_array(UniqueTransactionDescriptions, false) as OrderedUniqueTransactionDescriptions,
-          size(UniqueTransactionDescriptions) as CountOfUniqueTransactionTypes,
-          array_contains(UniqueTransactionDescriptions, 'Movies') as WentToMovies
-        from
-          agg_finances
-      """
-    )
-    .show(false)
+    print("Read SQL query from application.conf file,")
+    spark.sql(rootConfig.getConfig("spark_sql_demo").getString("agg_demo"))
+      .show(false)
 
     val companiesJson = List(
       """{"company":"NewCo","employees":[{"firstName":"Sidhartha","lastName":"Ray"},{"firstName":"Pratik","lastName":"Solanki"}]}""",
@@ -68,31 +57,20 @@ object FinanceDataAnalysis {
       """{"company":"OldCo","employees":[{"firstName":"Vivek","lastName":"Garg"},{"firstName":"Nitin","lastName":"Gupta"}]}""",
       """{"company":"ClosedCo","employees":[]}"""
     )
-    val companiesRDD = sparkSession.sparkContext.makeRDD(companiesJson)
-    val companiesDF = sparkSession.read.json(companiesRDD)
+    val companiesRDD = spark.sparkContext.makeRDD(companiesJson)
+    val companiesDF = spark.read.json(companiesRDD)
     companiesDF.createOrReplaceTempView("companies")
     companiesDF.show(false)
     companiesDF.printSchema()
 
-    val employeeDfTemp = sparkSession.sql("select company, explode(employees) as employee from companies")
+    val employeeDfTemp = spark.sql("select company, explode(employees) as employee from companies")
     employeeDfTemp.show()
     employeeDfTemp.createOrReplaceTempView("employees")
-    val employeeDfTemp2 = sparkSession.sql("select company, posexplode(employees) as (employeePosition, employee) from companies")
+    val employeeDfTemp2 = spark.sql("select company, posexplode(employees) as (employeePosition, employee) from companies")
     employeeDfTemp2.show()
-    sparkSession.sql("""
-      select
-        company,
-        employee.firstName as firstName,
-        case
-          when company = 'FamilyCo' then 'Premium'
-          when company = 'OldCo' then 'Legacy'
-          else 'Standard'
-        end as Tier
-      from
-        employees
-    """)
+    spark.sql(rootConfig.getConfig("spark_sql_demo").getString("case_when_demo"))
     .show(false)
 
-    sparkSession.close()
+    spark.close()
   }
 }

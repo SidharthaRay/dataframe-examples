@@ -7,19 +7,22 @@ import org.apache.spark.sql.{SaveMode, SparkSession}
 object Write2Redshift {
   def main(args: Array[String]): Unit = {
     try {
-      val sparkSession = SparkSession.builder.master("local[*]").appName("Write dataframe to Redshift Example").getOrCreate()
-      sparkSession.sparkContext.setLogLevel(Constants.ERROR)
+      val spark = SparkSession.builder
+        .master("local[*]")
+        .appName("Write Dataframe to Redshift Example")
+        .getOrCreate()
+      spark.sparkContext.setLogLevel(Constants.ERROR)
 
       val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
       val s3Config = rootConfig.getConfig("s3_conf")
       val redshiftConfig = rootConfig.getConfig("redshift_conf")
 
-      sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
-      sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
+      spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
+      spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
 
       println("\nCreating Dataframe from txn_fact dataset,")
       val s3Bucket = s3Config.getString("s3_bucket")
-      val txnDf = sparkSession.read
+      val txnDf = spark.read
         .option("header","true")
         .option("delimiter", "|")
         .csv(s"s3n://${s3Bucket}/txn_fct.csv")
@@ -38,7 +41,7 @@ object Write2Redshift {
         .save()
       println("Completed   <<<<<<<<<")
 
-      sparkSession.close()
+      spark.close()
     }  catch{
       case ex: Throwable => {
         ex.printStackTrace()

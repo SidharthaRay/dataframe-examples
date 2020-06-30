@@ -42,6 +42,9 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.2.1"
 )
 
+// https://mvnrepository.com/artifact/io.delta/delta-core
+libraryDependencies += "io.delta" %% "delta-core" % "0.5.0"
+
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs@_*) => MergeStrategy.discard
   case x => MergeStrategy.first

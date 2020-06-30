@@ -10,14 +10,16 @@ object WriteToMongo {
     val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
     val mongoConfig = rootConfig.getConfig("mongodb_config")
 
-    val sparkSession = SparkSession.builder.master("local[*]").appName("Dataframe Example")
+    val spark = SparkSession.builder
+      .master("local[*]")
+      .appName("Dataframe Example")
       .config("spark.mongodb.input.uri", mongoConfig.getString("input.uri"))
       .config("spark.mongodb.output.uri", mongoConfig.getString("output.uri"))
       .getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
-    val students = sparkSession.createDataFrame(
-      sparkSession.sparkContext.parallelize(
+    val students = spark.createDataFrame(
+      spark.sparkContext.parallelize(
         List(
           Student("Sidhartha", "Ray", "ITER", 200),
           Student("Satabdi", "Ray", "CET", 100)
@@ -33,7 +35,7 @@ object WriteToMongo {
       .option("collection", mongoConfig.getString("collection"))
       .save()
 
-    sparkSession.close()
+    spark.close()
   }
 
 }

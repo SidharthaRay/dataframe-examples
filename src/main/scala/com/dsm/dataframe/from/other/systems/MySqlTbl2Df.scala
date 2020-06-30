@@ -6,13 +6,16 @@ import org.apache.spark.sql.SparkSession
 
 object MySqlTbl2Df {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession.builder.master("local[*]").appName("Dataframe Example").getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
+    val spark = SparkSession.builder
+      .master("local[*]")
+      .appName("Dataframe Example")
+      .getOrCreate()
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
     val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
     val mysqlConfig = rootConfig.getConfig("mysql_conf")
 
-    var jdbcParams = Map("url" ->  getMysqlJdbcUrl(mysqlConfig),
+    var jdbcParams = Map("url" ->  Constants.getMysqlJdbcUrl(mysqlConfig),
       "lowerBound" -> "1",
       "upperBound" -> "100",
       "dbtable" -> "testdb.TRANSACTIONSYNC",
@@ -24,22 +27,14 @@ object MySqlTbl2Df {
     )
 
     println("\nReading data from MySQL DB using SparkSession.read.format(),")
-    val txnDF = sparkSession
+    val txnDF = spark
       .read.format("jdbc")
       .option("driver", "com.mysql.cj.jdbc.Driver")
       .options(jdbcParams)                                                  // options can pass map
       .load()
     txnDF.show()
 
-    sparkSession.stop()
-  }
-
-  // Creating Redshift JDBC URL
-  def getMysqlJdbcUrl(mysqlConfig: Config): String = {
-    val host = mysqlConfig.getString("hostname")
-    val port = mysqlConfig.getString("port")
-    val database = mysqlConfig.getString("database")
-    s"jdbc:mysql://$host:$port/$database?autoReconnect=true&useSSL=false"
+    spark.stop()
   }
 
 }

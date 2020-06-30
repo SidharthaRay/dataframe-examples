@@ -7,15 +7,19 @@ import org.apache.spark.sql.functions._
 
 object Rdd2DfThruExplicitSchema {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession.builder.master("local[*]").appName("RDD to Dataframe through explicit schema specification").getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
+    val spark = SparkSession.builder
+      .master("local[*]")
+      .appName("RDD to Dataframe")
+      .getOrCreate()
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
 
     println("\nConvert RDD to Dataframe using SparkSession.createDataframe(),")
     // Creating RDD of Row
-    val txnFctRdd = sparkSession.sparkContext.textFile("s3n://" + Constants.S3_BUCKET + "/txn_fct.csv")//("/Users/sidhartha.ray/Documents/workspace/dataframe-examples/src/main/resources/data/txn_fct.csv")
+    val txnFctRdd = spark.sparkContext
+      .textFile("s3n://" + Constants.S3_BUCKET + "/txn_fct.csv")
       .filter(record => !record.contains("txn_id"))
       .map(record => record.split("\\|"))
       .map(record => Row(record(0).toLong,
@@ -38,13 +42,15 @@ object Rdd2DfThruExplicitSchema {
       StructField("created_time_ist", StringType, true) :: Nil
     )
 
-    var txnFctDf = sparkSession.createDataFrame(txnFctRdd, txnFctSchema)
+    var txnFctDf = spark.createDataFrame(txnFctRdd, txnFctSchema)
     txnFctDf.printSchema()
     txnFctDf.show(5, false)
 
     // Applying tranformation on dataframe using DSL (Domain Specific Language)
     txnFctDf = txnFctDf
-      .withColumn("created_time_ist", unix_timestamp(txnFctDf("created_time_ist"), "yyyy-MM-dd HH:mm:ss").cast(TimestampType))
+      .withColumn("created_time_ist",
+        unix_timestamp(txnFctDf("created_time_ist"), "yyyy-MM-dd HH:mm:ss").cast(TimestampType))
+
     txnFctDf.printSchema()
     txnFctDf.show(5, false)
 
@@ -63,6 +69,6 @@ object Rdd2DfThruExplicitSchema {
       .withColumnRenamed("approx_count_distinct(status)", "dist_status_count")
     txnAggDf.show(5, false)
 
-    sparkSession.close()
+    spark.close()
   }
 }

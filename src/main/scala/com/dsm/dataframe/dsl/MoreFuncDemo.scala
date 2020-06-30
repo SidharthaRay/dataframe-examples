@@ -8,21 +8,21 @@ import org.apache.spark.sql.functions._
 
 object MoreFuncDemo {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession
+    val spark = SparkSession
       .builder
       .master("local[*]")
-      .appName("Dataframe Example")
+      .appName("Some More Funcions")
       .getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
-    import sparkSession.implicits._
+    spark.sparkContext.setLogLevel(Constants.ERROR)
+    import spark.implicits._
 
     val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
     val s3Config = rootConfig.getConfig("s3_conf")
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
 
-    val peopleDf = sparkSession.createDataFrame(List(
+    val peopleDf = spark.createDataFrame(List(
       Person("Sidhartha", "Ray", 32, None, Some("Programmer")),
       Person("Pratik", "Solanki", 22, Some(176.7), None),
       Person("Ashok ", "Pradhan", 62, None, None),
@@ -60,6 +60,6 @@ object MoreFuncDemo {
 //      .filter(lower($"jobType").isin("chemical engineer", "teacher"))
       .show()
 
-    sparkSession.close()
+    spark.close()
   }
 }

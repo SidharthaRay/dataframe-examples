@@ -7,23 +7,22 @@ import org.apache.spark.sql.functions._
 
 object FinanceDataAnalysis {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession
+    val spark = SparkSession
       .builder
       .master("local[*]")
-      .appName("Dataframe Example")
+      .appName("Finance Data Analysis")
       .getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
-    import sparkSession.implicits._
+    spark.sparkContext.setLogLevel(Constants.ERROR)
+    import spark.implicits._
 
     val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
     val s3Config = rootConfig.getConfig("s3_conf")
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
 
     val finFilePath = s"s3n://${s3Config.getString("s3_bucket")}/finances-small"
-//    val finFilePath = "/Users/sidhartha.ray/Documents/workspace/dataframe-examples/src/main/resources/data/finances-small"
-    val financeDf = sparkSession.read.parquet(finFilePath)
+    val financeDf = spark.read.parquet(finFilePath)
 
     financeDf.printSchema()
     financeDf.show()
@@ -35,10 +34,6 @@ object FinanceDataAnalysis {
     financeDf
       .select(concat_ws(" - ", $"AccountNumber", $"Description").alias("AccountDetails"))
       .show(5, false)
-
-//    financeDf
-//      .withColumn("AccountDetails", concat_ws(" - ", $"AccountNumber", $"Description"))
-//      .show(5, false)
 
     val aggFinanceDf = financeDf
         .groupBy($"AccountNumber")
@@ -62,12 +57,12 @@ object FinanceDataAnalysis {
 
     val companiesJson = List(
       """{"company":"NewCo","employees":[{"firstName":"Sidhartha","lastName":"Ray"},{"firstName":"Pratik","lastName":"Solanki"}]}""",
-      """{"company":"FamilyCo","employees":[{"firstName":"Jiten","lastName":"Pupta"},{"firstName":"Pallavi","lastName":"Gupta"}]}""",
+      """{"company":"FamilyCo","employees":[{"firstName":"Jiten","lastName":"Gupta"},{"firstName":"Pallavi","lastName":"Gupta"}]}""",
       """{"company":"OldCo","employees":[{"firstName":"Vivek","lastName":"Garg"},{"firstName":"Nitin","lastName":"Gupta"}]}""",
       """{"company":"ClosedCo","employees":[]}"""
     )
-    val companiesRDD = sparkSession.sparkContext.makeRDD(companiesJson)
-    val companiesDF = sparkSession.read.json(companiesRDD)
+    val companiesRDD = spark.sparkContext.makeRDD(companiesJson)
+    val companiesDF = spark.read.json(companiesRDD)
     companiesDF.show(false)
     companiesDF.printSchema()
 
@@ -82,6 +77,6 @@ object FinanceDataAnalysis {
         .otherwise("Standard").as("Tier"))
       .show(false)
 
-    sparkSession.close()
+    spark.close()
   }
 }

@@ -8,16 +8,19 @@ import org.apache.spark.sql.expressions.Window
 
 object ParquetFile2Df {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession.builder.master("local[*]").appName("Dataframe Example").getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
+    val spark = SparkSession
+      .builder
+      .master("local[*]")
+      .appName("Parquet File to Dataframe")
+      .getOrCreate()
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
 
     println("\nCreating dataframe from parquet file using 'SparkSession.read.parquet()',")
-    val nycOmoDf = sparkSession.read
+    val nycOmoDf = spark.read
       .parquet("s3n://" + Constants.S3_BUCKET + "/NYC_OMO")
-//      .parquet("/Users/sidhartha.ray/Documents/workspace/dataframe-examples/src/main/resources/data/NYC_OMO")
       .repartition(5)
 
     println("# of records = " + nycOmoDf.count())
@@ -35,7 +38,7 @@ object ParquetFile2Df {
       .show()
 
     println("OMO's Zip & Borough list,")
-    import sparkSession.implicits._
+    import spark.implicits._
     val boroZipDf = nycOmoDf
       .select($"Boro", $"Zip".cast(IntegerType))
       .groupBy("Boro")
@@ -49,7 +52,8 @@ object ParquetFile2Df {
 
     val omoCreateDatePartitionWindow = Window.partitionBy("OMOCreateDate")
     val omoDailyFreq = nycOmoDf
-        .withColumn("OMODailyFreq", count("OMOID").over(omoCreateDatePartitionWindow).alias("OMODailyFreq"))
+        .withColumn("OMODailyFreq",
+          count("OMOID").over(omoCreateDatePartitionWindow).alias("OMODailyFreq"))
 
     println("# of partitions in window'ed OM dataframe = " + omoDailyFreq.count())
     omoDailyFreq.show(50, false)
@@ -64,8 +68,7 @@ object ParquetFile2Df {
       .write
       .mode(SaveMode.Overwrite)
       .parquet("s3n://" + Constants.S3_BUCKET + "/nyc_omo_data")
-//      .parquet("/Users/sidhartha.ray/Documents/workspace/dataframe-examples/src/main/resources/data/nyc_omo_data")
 
-    sparkSession.close()
+    spark.close()
   }
 }

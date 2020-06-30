@@ -9,22 +9,22 @@ import com.dsm.model.Product
 
 object WindowFuncDemo {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession
+    val spark = SparkSession
       .builder
       .master("local[*]")
-      .appName("Dataframe Example")
+      .appName("Window Function Demo")
       .getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
-    import sparkSession.implicits._
+    spark.sparkContext.setLogLevel(Constants.ERROR)
+    import spark.implicits._
 
     val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
     val s3Config = rootConfig.getConfig("s3_conf")
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
 
     val finFilePath = s"s3n://${s3Config.getString("s3_bucket")}/finances-small"
-    val financeDf = sparkSession.read.parquet(finFilePath)
+    val financeDf = spark.read.parquet(finFilePath)
     financeDf.printSchema()
 
     val accNumPrev4WindowSpec = Window.partitionBy($"AccountNumber")
@@ -47,7 +47,7 @@ object WindowFuncDemo {
       Product("Pro", "Tablet", 4500),
       Product("Pro2", "Tablet", 6500)
     )
-    val products = sparkSession.createDataFrame(productList)
+    val products = spark.createDataFrame(productList)
     products.printSchema()
 
     val catRevenueWindowSpec = Window.partitionBy($"category")
@@ -64,13 +64,6 @@ object WindowFuncDemo {
       )
       .show()
 
-/*
-    financeDf
-      .select($"*", window($"Date", "30 days", "15 minutes"))
-      .show()
-*/
-
-
-    sparkSession.close()
+    spark.close()
   }
 }

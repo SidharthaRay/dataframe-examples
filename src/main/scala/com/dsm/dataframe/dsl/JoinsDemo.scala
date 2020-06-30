@@ -1,29 +1,27 @@
 package com.dsm.dataframe.dsl
 
-import com.dsm.model.{Employee, _}
+import com.dsm.model._
 import com.dsm.utils.Constants
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
 
 object JoinsDemo {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession
+    val spark = SparkSession
       .builder
       .master("local[*]")
-      .appName("Dataframe Example")
+      .appName("Joins Example")
       .getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
-    import sparkSession.implicits._
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
     val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
     val s3Config = rootConfig.getConfig("s3_conf")
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", s3Config.getString("access_key"))
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", s3Config.getString("secret_access_key"))
 
-    val employeeDf = sparkSession.createDataFrame(List(
+    val employeeDf = spark.createDataFrame(List(
       Employee(1, "Sidhartha", "Ray"),
       Employee(2, "Pratik", "Solanki"),
       Employee(3, "Ashok", "Pradhan"),
@@ -32,7 +30,7 @@ object JoinsDemo {
       Employee(7, "Ravi", "Kiran")
     ))
 
-    val empRoleDf = sparkSession.createDataFrame(List(
+    val empRoleDf = spark.createDataFrame(List(
       Role(1, "Architect"),
       Role(2, "Programmer"),
       Role(3, "Analyst"),

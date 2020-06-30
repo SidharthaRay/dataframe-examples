@@ -6,11 +6,14 @@ import org.apache.spark.sql.types._
 
 object TextFile2Df {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession.builder.master("local[*]").appName("Dataframe Example").getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
+    val spark = SparkSession.builder
+      .master("local[*]")
+      .appName("Dataframe Example")
+      .getOrCreate()
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
 
     println("\nCreating dataframe from CSV file using 'SparkSession.read.format()',")
     val finSchema = new StructType()
@@ -20,7 +23,7 @@ object TextFile2Df {
       .add("has_student_loans", BooleanType,true)
       .add("income", DoubleType,true)
 
-    val finDf = sparkSession.read
+    val finDf = spark.read
         .option("header", "false")
         .option("delimiter", ",")
         .format("csv")
@@ -31,7 +34,7 @@ object TextFile2Df {
     finDf.show()
 
     println("Creating dataframe from CSV file using 'SparkSession.read.csv()',")
-    val financeDf = sparkSession.read
+    val financeDf = spark.read
       .option("mode", "DROPMALFORMED")
       .option("header", "false")
       .option("delimiter", ",")
@@ -51,6 +54,6 @@ object TextFile2Df {
       .option("delimiter", "~")
       .csv("s3n://" + Constants.S3_BUCKET + "/fin")
 
-    sparkSession.close()
+    spark.close()
   }
 }

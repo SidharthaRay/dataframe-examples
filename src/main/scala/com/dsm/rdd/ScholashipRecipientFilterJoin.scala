@@ -13,45 +13,47 @@ import org.apache.spark.sql.SparkSession
   */
 object ScholashipRecipientFilterJoin {
   def main(args: Array[String]): Unit = {
-    val sparkSession = SparkSession.builder.master("local[*]").appName("Dataframe Example").getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
+    val spark = SparkSession.builder.master("local[*]").appName("Dataframe Example").getOrCreate()
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
-    sparkSession.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
 
-    val demographicsRDD = sparkSession.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/demographic.csv")
-    val financesRDD = sparkSession.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/finances.csv")
+    val demographicsRDD = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/demographic.csv")
+    val financesRDD = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/finances.csv")
 
-    val demographicsPairedRdd = demographicsRDD.map(record => record.split(","))
-        .map(record =>
-          Demographic(record(0).toInt,
-            record(1).toInt,
-            record(2).toBoolean,
-            record(3),
-            record(4),
-            record(5).toBoolean,
-            record(6).toBoolean,
-            record(7).toInt
-          )
+    val demographicsPairedRdd = demographicsRDD
+      .map(record => record.split(","))
+      .map(record =>
+        Demographic(record(0).toInt,
+          record(1).toInt,
+          record(2).toBoolean,
+          record(3),
+          record(4),
+          record(5).toBoolean,
+          record(6).toBoolean,
+          record(7).toInt
         )
-        .map(demographic => (demographic.id, demographic))      //Pair RDD, (id, demographics)
-        .filter(p => p._2.country == "Switzerland")
+      )
+      .map(demographic => (demographic.id, demographic))      //Pair RDD, (id, demographics)
+      .filter(p => p._2.country == "Switzerland")
 
-    val financesPairedRdd = financesRDD.map(record => record.split(","))
-          .map(record => Finance(
-            record(0).toInt,
-            record(1).toBoolean,
-            record(2).toBoolean,
-            record(3).toBoolean,
-            record(4).toInt
-          )
+    val financesPairedRdd = financesRDD
+      .map(record => record.split(","))
+      .map(record => Finance(
+          record(0).toInt,
+          record(1).toBoolean,
+          record(2).toBoolean,
+          record(3).toBoolean,
+          record(4).toInt
         )
-        .map(finance => (finance.id, finance))                  //Pair RDD, (id, finances)
-        .filter(p => p._2.hasFinancialDependents && p._2.hasDebt)
+      )
+      .map(finance => (finance.id, finance))                  //Pair RDD, (id, finances)
+      .filter(p => p._2.hasFinancialDependents && p._2.hasDebt)
 
     demographicsPairedRdd.join(financesPairedRdd)
       .foreach(println)
 
-    sparkSession.close()
+    spark.close()
   }
 }

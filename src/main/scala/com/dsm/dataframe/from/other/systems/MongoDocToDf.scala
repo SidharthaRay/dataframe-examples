@@ -9,19 +9,18 @@ object MongoDocToDf {
     val rootConfig = ConfigFactory.load("application.conf").getConfig("conf")
     val mongoConfig = rootConfig.getConfig("mongodb_config")
 
-    val sparkSession = SparkSession.builder.master("local[*]").appName("Dataframe Example")
+    val spark = SparkSession.builder.master("local[*]").appName("Mongo Doc To Dataframe")
       .config("spark.mongodb.input.uri", mongoConfig.getString("input.uri"))
       .getOrCreate()
-    sparkSession.sparkContext.setLogLevel(Constants.ERROR)
+    spark.sparkContext.setLogLevel(Constants.ERROR)
 
-    val students = sparkSession
-      .read
+    val students = spark.read
       .format("com.mongodb.spark.sql.DefaultSource")
       .option("database", mongoConfig.getString("input.database"))
       .option("collection", mongoConfig.getString("collection"))
       .load()
     students.show()
 
-    sparkSession.close()
+    spark.close()
   }
 }
