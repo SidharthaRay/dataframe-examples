@@ -1,6 +1,7 @@
 package com.dsm.rdd
 
-import com.dsm.model.{Demographic, Finance, Course}
+import com.dsm.model.{Course, Demographic, Finance}
+import com.dsm.utils.Constants
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -18,12 +19,12 @@ object ScholashipRecipientJoinFilter {
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
-    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", "<ACCESS_KEY>")
-    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", "<SECRET_ACCESS_KEY>")
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
 
-    val demographicsRDD = spark.sparkContext.textFile("s3n://<BUCKET_NAME>/demographic.csv")
-    val financesRDD = spark.sparkContext.textFile("s3n://<BUCKET_NAME>/finances.csv")
-    val coursesRDD = spark.sparkContext.textFile("s3n://<BUCKET_NAME>/course.csv")
+    val demographicsRDD = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/demographic.csv")
+    val financesRDD = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/finances.csv")
+    val coursesRDD = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/course.csv")
 
     println("# of records = " + demographicsRDD.count())
 

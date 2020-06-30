@@ -4,6 +4,7 @@ import com.dsm.utils.Constants
 import org.apache.spark.sql.SparkSession
 
 object Rdd2DfThruSchemaAutoInfer {
+
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder
       .master("local[*]")
@@ -29,6 +30,7 @@ object Rdd2DfThruSchemaAutoInfer {
     import spark.sqlContext.implicits._
 
     println("\nConvert RDD to Dataframe using toDF() - without column names,")
+    //println("\nConvert RDD to Dataframe using toDF() - without column names,")
     val txnDfNoColNames = txnFctRdd.toDF
     txnDfNoColNames.printSchema()
     txnDfNoColNames.show(5, false)

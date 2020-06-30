@@ -5,6 +5,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 
 object JsonFile2Df {
+
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder
@@ -17,14 +18,16 @@ object JsonFile2Df {
     spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
 
     import spark.implicits._
-    val employeeDf = spark.read
-      .json("s3n://" + Constants.S3_BUCKET + "/cart_sample_small.txt")
+    val compDf = spark.read
+      .json("s3n://" + Constants.S3_BUCKET + "/company.json")
+    compDf.printSchema()
+    compDf.show(false)
 
-    employeeDf.printSchema()
-    employeeDf.show(false)
+    val flattenedDf = compDf.select($"company", explode($"employees").alias("employee"))
+    flattenedDf.show(false)
 
-    employeeDf.select($"cart.swid".alias("cust_id")).show(false)
-    employeeDf.select(explode($"cart.vacationOffer.package.room").alias("vacation_room")).show(false)
+    flattenedDf.select($"company", $"employee.firstName".alias("emp_name"))
+      .show(false)
 
     spark.close()
   }

@@ -51,17 +51,11 @@ object FinanceDataAnalysis {
     spark.sql(rootConfig.getConfig("spark_sql_demo").getString("agg_demo"))
       .show(false)
 
-    val companiesJson = List(
-      """{"company":"NewCo","employees":[{"firstName":"Sidhartha","lastName":"Ray"},{"firstName":"Pratik","lastName":"Solanki"}]}""",
-      """{"company":"FamilyCo","employees":[{"firstName":"Jiten","lastName":"Pupta"},{"firstName":"Pallavi","lastName":"Gupta"}]}""",
-      """{"company":"OldCo","employees":[{"firstName":"Vivek","lastName":"Garg"},{"firstName":"Nitin","lastName":"Gupta"}]}""",
-      """{"company":"ClosedCo","employees":[]}"""
-    )
-    val companiesRDD = spark.sparkContext.makeRDD(companiesJson)
-    val companiesDF = spark.read.json(companiesRDD)
-    companiesDF.createOrReplaceTempView("companies")
-    companiesDF.show(false)
-    companiesDF.printSchema()
+    val compDf = spark.read
+      .json("s3n://" + Constants.S3_BUCKET + "/company.json")
+    compDf.createOrReplaceTempView("companies")
+    compDf.show(false)
+    compDf.printSchema()
 
     val employeeDfTemp = spark.sql("select company, explode(employees) as employee from companies")
     employeeDfTemp.show()

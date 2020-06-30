@@ -55,20 +55,14 @@ object FinanceDataAnalysis {
     )
     .show(false)
 
-    val companiesJson = List(
-      """{"company":"NewCo","employees":[{"firstName":"Sidhartha","lastName":"Ray"},{"firstName":"Pratik","lastName":"Solanki"}]}""",
-      """{"company":"FamilyCo","employees":[{"firstName":"Jiten","lastName":"Gupta"},{"firstName":"Pallavi","lastName":"Gupta"}]}""",
-      """{"company":"OldCo","employees":[{"firstName":"Vivek","lastName":"Garg"},{"firstName":"Nitin","lastName":"Gupta"}]}""",
-      """{"company":"ClosedCo","employees":[]}"""
-    )
-    val companiesRDD = spark.sparkContext.makeRDD(companiesJson)
-    val companiesDF = spark.read.json(companiesRDD)
-    companiesDF.show(false)
-    companiesDF.printSchema()
+    val compDf = spark.read
+      .json("s3n://" + Constants.S3_BUCKET + "/company.json")
+    compDf.show(false)
+    compDf.printSchema()
 
-    val employeeDfTemp = companiesDF.select($"company", explode($"employees").as("employee"))
+    val employeeDfTemp = compDf.select($"company", explode($"employees").as("employee"))
     employeeDfTemp.show()
-    val employeeDfTemp2 = companiesDF.select($"company", posexplode($"employees").as(Seq("employeePosition", "employee")))
+    val employeeDfTemp2 = compDf.select($"company", posexplode($"employees").as(Seq("employeePosition", "employee")))
     employeeDfTemp2.show()
     val employeeDf = employeeDfTemp.select($"company", expr("employee.firstName as firstName"))
     employeeDf.select($"*",
