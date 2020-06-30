@@ -10,18 +10,13 @@ resolvers ++= Seq(
 )
 
 // Spark Core and Spark SQL dependencies
-//libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.1.1"
-//libraryDependencies += "org.apache.spark" % "spark-sql_2.11" % "2.1.1"
-//libraryDependencies += "org.apache.spark" % "spark-hive_2.11" % "2.1.1"
-
 libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.3.1"
 libraryDependencies += "org.apache.spark" % "spark-sql_2.11" % "2.3.1"
 libraryDependencies += "org.apache.spark" % "spark-hive_2.11" % "2.3.1"
 
 // Reading data from s3 SBT dependency
 libraryDependencies += "org.apache.hadoop" % "hadoop-aws" % "2.7.4"
-//libraryDependencies += "org.apache.hadoop" % "hadoop-aws" % "2.9.2"
-//libraryDependencies += "org.apache.hadoop" % "hadoop-aws" % "3.2.1"
+
 // Avro dependency
 libraryDependencies += "com.databricks" % "spark-avro_2.11" % "3.2.0"
 
