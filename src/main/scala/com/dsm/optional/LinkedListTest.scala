@@ -1,4 +1,4 @@
-package com.dsm.test
+package com.dsm.optional
 
 object LinkedListTest {
   def main(args: Array[String]): Unit = {

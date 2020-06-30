@@ -1,4 +1,4 @@
-package com.dsm.test
+package com.dsm.optional
 
 object HigherOrderFuncTest {
   def main(args: Array[String]): Unit = {
