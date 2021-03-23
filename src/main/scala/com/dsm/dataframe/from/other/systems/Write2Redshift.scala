@@ -36,6 +36,7 @@ object Write2Redshift {
         .option("url", jdbcUrl)
         .option("tempdir", s"s3n://${s3Bucket}/temp")
         .option("forward_spark_s3_credentials", "true")
+        .option("tempFormat","CSV GZIP")
         .option("dbtable", "PUBLIC.TXN_FCT")
         .mode(SaveMode.Overwrite)
         .save()

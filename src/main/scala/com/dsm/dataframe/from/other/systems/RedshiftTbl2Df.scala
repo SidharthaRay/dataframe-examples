@@ -22,7 +22,7 @@ object RedshiftTbl2Df {
 
       println("Reading txn_fact table from AWS Redshift and creating Dataframe,")
       val s3Bucket = s3Config.getString("s3_bucket")
-      val txnDf = spark.sqlContext.read
+      val txnDf = spark.read
         .format("com.databricks.spark.redshift")
         .option("url", Constants.getRedshiftJdbcUrl(redshiftConfig))
         .option("tempdir", s"s3n://${s3Bucket}/temp")

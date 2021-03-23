@@ -19,10 +19,10 @@ object ScholashipRecipientFilterJoin {
     spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Constants.ACCESS_KEY)
     spark.sparkContext.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Constants.SECRET_ACCESS_KEY)
 
-    val demographicsRDD = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/demographic.csv")
-    val financesRDD = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/finances.csv")
+    val demographicsRdd = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/demographic.csv")
+    val financesRdd = spark.sparkContext.textFile(s"s3n://${Constants.S3_BUCKET}/finances.csv")
 
-    val demographicsPairedRdd = demographicsRDD
+    val demographicsPairedRdd = demographicsRdd
       .map(record => record.split(","))
       .map(record =>
         Demographic(record(0).toInt,
@@ -38,7 +38,7 @@ object ScholashipRecipientFilterJoin {
       .map(demographic => (demographic.id, demographic))      //Pair RDD, (id, demographics)
       .filter(p => p._2.country == "Switzerland")
 
-    val financesPairedRdd = financesRDD
+    val financesPairedRdd = financesRdd
       .map(record => record.split(","))
       .map(record => Finance(
           record(0).toInt,
